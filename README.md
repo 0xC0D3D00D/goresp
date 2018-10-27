@@ -15,7 +15,7 @@ For documentation see [Godoc](https://godoc.org/github.com/0xc0d3d00d/goresp).
 This table has examples for how data will be encoded and decoded.
 
 RESP Representation                   | Human-readable | RESP Type      | Go Representation
---------------------------------------|---------------:|---------------:|----------------------------------------------------------:
+--------------------------------------|----------------|----------------|-----------------------------------------------------------
 "\r\n"                                | (empty)        | undefined      | nil
 ":1\r\n"                              | 1              | Integer        | int64(1)
 "+abc\r\n"                            | "abc"          | Simple String  | []byte{'a','b','c'}
