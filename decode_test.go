@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func BenchmarkReadSmallString(b *testing.B) {
+func BenchmarkReadSimpleString(b *testing.B) {
 	reader := bytes.NewReader([]byte{'a', 'b', 'c', '\r', '\n'})
 	for n := 0; n < b.N; n++ {
 		reader.Seek(0, io.SeekStart)
@@ -97,6 +97,16 @@ func TestRead(t *testing.T) {
 			errors.New("ERR"),
 			nil,
 		}, // error
+		{
+			[]byte{'\r'},
+			nil,
+			ErrUnexpectedEOF,
+		}, // empty (bad termination)
+		{
+			[]byte{'!', 'I', 'N', 'V', 'A', 'L', 'I', 'D', '\r', '\n'},
+			nil,
+			ErrInvalidMessage,
+		}, // invalid type
 	}
 
 	for _, testCase := range testCases {
@@ -114,6 +124,11 @@ func TestReadArray(t *testing.T) {
 		resp interface{}
 		err  error
 	}{
+		{
+			[]byte{},
+			nil,
+			ErrUnexpectedEOF,
+		}, // no input
 		{
 			[]byte{'0', '\r', '\n'},
 			[]interface{}{},
@@ -154,6 +169,11 @@ func TestReadArray(t *testing.T) {
 			},
 			nil,
 		}, // mixed array
+		{
+			[]byte{'3', '\r', '\n', ':', '1', '\r', '\n', ':', '2', '\r', '\n'},
+			nil,
+			ErrUnexpectedEOF,
+		}, // array of integers (bad size)
 	}
 
 	for _, testCase := range testCases {
@@ -172,6 +192,16 @@ func TestReadBulkString(t *testing.T) {
 		err  error
 	}{
 		{
+			[]byte{},
+			nil,
+			ErrUnexpectedEOF,
+		}, // no input
+		{
+			[]byte{'0', '\r', '\n', '\r', '\n'},
+			[]byte{},
+			nil,
+		}, // empty string
+		{
 			[]byte{'3', '\r', '\n', 'a', 'b', 'c', '\r', '\n'},
 			[]byte{'a', 'b', 'c'},
 			nil,
@@ -180,42 +210,32 @@ func TestReadBulkString(t *testing.T) {
 			[]byte{'3', '\r', '\n', 'a', 'b', 'c'},
 			nil,
 			ErrUnexpectedEOF,
-		}, // valid but unexpected eof
+		}, // valid (no termination)
 		{
 			[]byte{'3', '\r', '\n', 'a', 'b', 'c', '\r', '\r'},
 			nil,
 			ErrInvalidMessage,
-		}, // invalid (bad tail)
+		}, // valid (bad termination)
 		{
 			[]byte{'3', '\r', '\n'},
 			nil,
 			ErrUnexpectedEOF,
-		}, // only integer
+		}, // Unexpected termination
 		{
 			[]byte{'2', '\r', '\n', '\r', '\n', '\r', '\n'},
 			[]byte{'\r', '\n'},
 			nil,
 		}, // binary safe check
 		{
-			[]byte{'0', '\r', '\n', '\r', '\n'},
-			[]byte{},
-			nil,
-		}, // empty string
-		{
 			[]byte{'0', '\r', '\n'},
 			nil,
 			ErrUnexpectedEOF,
 		}, // invalid empty string
 		{
-			[]byte{},
-			nil,
-			ErrUnexpectedEOF,
-		}, // empty
-		{
 			[]byte{'B', 'A', 'D', '\r', '\n'},
 			nil,
 			ErrInvalidMessage,
-		}, // bad integer
+		}, // bad size
 	}
 
 	for _, testCase := range testCases {
@@ -234,20 +254,30 @@ func TestReadInteger(t *testing.T) {
 		err  error
 	}{
 		{
+			[]byte{},
+			0,
+			ErrUnexpectedEOF,
+		}, // no input
+		{
+			[]byte{'\r', '\n'},
+			0,
+			ErrInvalidMessage,
+		}, // empty
+		{
 			[]byte{'1', '2', '3', '4', '\r', '\n'},
 			1234,
 			nil,
-		},
+		}, // 1234
+		{
+			[]byte{'1', '2', '3', '4', '\r'},
+			0,
+			ErrUnexpectedEOF,
+		}, // 1234 (bad termination)
 		{
 			[]byte{'1', 'E', 'R', 'R', '\r', '\n'},
 			0,
 			ErrInvalidMessage,
-		},
-		{
-			[]byte{},
-			0,
-			ErrUnexpectedEOF,
-		},
+		}, // invalid integer
 	}
 
 	for _, testCase := range testCases {
@@ -266,20 +296,25 @@ func TestReadSimpleString(t *testing.T) {
 		err  error
 	}{
 		{
+			[]byte{},
+			nil,
+			ErrUnexpectedEOF,
+		}, // no input
+		{
+			[]byte{'\r', '\n'},
+			[]byte{},
+			nil,
+		}, // empty
+		{
 			[]byte{'a', 'b', 'c', '\r', '\n'},
 			[]byte{'a', 'b', 'c'},
 			nil,
-		},
+		}, // abc
 		{
 			[]byte{'a', 'b', 'c', '\r'},
 			nil,
 			ErrUnexpectedEOF,
-		},
-		{
-			[]byte{},
-			nil,
-			ErrUnexpectedEOF,
-		},
+		}, // abc (bad termination)
 	}
 
 	for _, testCase := range testCases {

@@ -115,6 +115,9 @@ func readArray(reader io.Reader) (interface{}, error) {
 	for i := int64(0); i < size; i++ {
 		element, err := read(reader)
 		if err != nil {
+			if err == io.EOF {
+				return nil, ErrUnexpectedEOF
+			}
 			return nil, err
 		}
 		array[i] = element
@@ -135,7 +138,7 @@ func read(reader io.Reader) (interface{}, error) {
 		if typeIndicator[0] == '\n' {
 			return nil, nil
 		}
-		return nil, ErrInvalidMessage
+		return nil, ErrUnexpectedEOF
 	case typeSimpleString:
 		return readSimpleString(reader)
 	case typeError:
