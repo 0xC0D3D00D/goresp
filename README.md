@@ -11,6 +11,23 @@ Go implementation for RESP (REdis Serialization Protocol)
 # Documentation
 For documentation see [Godoc](https://godoc.org/github.com/0xc0d3d00d/goresp).
 
+# Data types
+This table has examples for how data will be encoded and decoded.
+
+RESP Representation                   | Human-readable | RESP Type      | Go Representation
+--------------------------------------|---------------:|---------------:|----------------------------------------------------------:
+"\r\n"                                | (empty)        | undefined      | nil
+":1\r\n"                              | 1              | Integer        | int64(1)
+"+abc\r\n"                            | "abc"          | Simple String  | []byte{'a','b','c'}
+"+\r\n"                               | ""             | Simple String  | []byte{}
+"-abc\r\n"                            | "abc"          | Error          | error (msg=abc)
+"-\r\n"                               | ""             | Error          | error
+"$5\r\nabc\r\n\r\n"                   | "abc\r\n"      | Bulk String    | []byte{'a','b','c'}
+"$0\r\n\r\n"                          | ""             | Bulk String    | []byte{}
+"*0\r\n"                              | []             | Array          | []interface{}{}
+"*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n"    | ["foo", "bar"] | Array          | []interface{}{[]byte{'f','o','o'}, []byte{'b','a','r'}}
+"*2\r\n:1\r\n$3\r\nfoo\r\n"           | [6, "foobar"]  | Array (mixed)  | []interface{}{int64(1), []byte{'f', 'o', 'o'}}
+
 # Benchmarks
 Benchmark name                              | (1)        | (2)         | (3) 		    | (4)
 --------------------------------------------|-----------:|------------:|-----------:|---------:
@@ -23,6 +40,9 @@ BenchmarkReadArray                          |  3000000   |        580  |     176
 - (2): Single Repetition Duration (ns/op), lower is better
 - (3): Heap Memory (B/op), lower is better
 - (4): Average Allocations per Repetition (allocs/op), lower is better
+
+# TODO List
+[ ] Change Simple string decoded type to string
 
 # License
 Unless otherwise noted, All source files in this library are distributed under the Apache License 2.0 found in the LICENSE file.
