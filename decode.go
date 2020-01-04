@@ -20,19 +20,19 @@ var (
 )
 
 func readInteger(reader io.Reader) (int64, error) {
-	bytes, err := readSimpleString(reader)
+	str, err := readSimpleString(reader)
 	if err != nil {
 		return 0, err
 	}
 
-	i, err := strconv.ParseInt(string(bytes), 10, 64)
+	i, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {
 		return 0, ErrInvalidMessage
 	}
 	return i, nil
 }
 
-func readSimpleString(reader io.Reader) ([]byte, error) {
+func readSimpleString(reader io.Reader) (string, error) {
 	oneByte := make([]byte, 1)
 	readBytes := 0
 	var err error
@@ -41,19 +41,19 @@ func readSimpleString(reader io.Reader) ([]byte, error) {
 	for {
 		_, err = reader.Read(oneByte)
 		if err == io.EOF {
-			return nil, ErrUnexpectedEOF
+			return "", ErrUnexpectedEOF
 		}
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
 		if oneByte[0] == '\r' {
 			_, err = reader.Read(oneByte)
 			if err == io.EOF {
-				return nil, ErrUnexpectedEOF
+				return "", ErrUnexpectedEOF
 			}
 			if err != nil {
-				return nil, err
+				return "", err
 			}
 			if oneByte[0] == '\n' {
 				break
@@ -64,7 +64,7 @@ func readSimpleString(reader io.Reader) ([]byte, error) {
 		str = append(str, oneByte[0])
 	}
 
-	return str[:readBytes], nil
+	return string(str[:readBytes]), nil
 }
 
 func readBulkString(reader io.Reader) ([]byte, error) {
@@ -143,7 +143,7 @@ func read(reader io.Reader) (interface{}, error) {
 		return readSimpleString(reader)
 	case typeError:
 		errMsg, err := readSimpleString(reader)
-		if errMsg == nil {
+		if err != nil {
 			return nil, err
 		}
 		return errors.New(string(errMsg)), err

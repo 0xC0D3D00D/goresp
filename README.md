@@ -19,8 +19,8 @@ RESP Representation                   | Human-readable | RESP Type      | Go Rep
 --------------------------------------|----------------|----------------|-----------------------------------------------------------
 "\r\n"                                | (empty)        | undefined      | nil
 ":1\r\n"                              | 1              | Integer        | int64(1)
-"+abc\r\n"                            | "abc"          | Simple String  | []byte{'a','b','c'}
-"+\r\n"                               | ""             | Simple String  | []byte{}
+"+abc\r\n"                            | "abc"          | Simple String  | "abc"
+"+\r\n"                               | ""             | Simple String  | ""
 "-abc\r\n"                            | "abc"          | Error          | error (msg=abc)
 "-\r\n"                               | ""             | Error          | error
 "$5\r\nabc\r\n\r\n"                   | "abc\r\n"      | Bulk String    | []byte{'a','b','c'}
@@ -43,7 +43,7 @@ BenchmarkReadArray                          |  3000000   |        580  |     176
 - (4): Average Allocations per Repetition (allocs/op), lower is better
 
 # TODO List
-[ ] Change Simple string decoded type to string
+[X] Change Simple string decoded type to string
 
 # License
 Unless otherwise noted, All source files in this library are distributed under the Apache License 2.0 found in the LICENSE file.

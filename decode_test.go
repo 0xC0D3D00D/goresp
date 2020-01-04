@@ -89,7 +89,7 @@ func TestRead(t *testing.T) {
 		}, // mixed array
 		{
 			[]byte{'+', 'O', 'K', '\r', '\n'},
-			[]byte{'O', 'K'},
+			"OK",
 			nil,
 		}, // simple string
 		{
@@ -292,27 +292,27 @@ func TestReadInteger(t *testing.T) {
 func TestReadSimpleString(t *testing.T) {
 	testCases := []struct {
 		msg  []byte
-		resp []byte
+		resp string
 		err  error
 	}{
 		{
 			[]byte{},
-			nil,
+			"",
 			ErrUnexpectedEOF,
 		}, // no input
 		{
 			[]byte{'\r', '\n'},
-			[]byte{},
+			"",
 			nil,
 		}, // empty
 		{
 			[]byte{'a', 'b', 'c', '\r', '\n'},
-			[]byte{'a', 'b', 'c'},
+			"abc",
 			nil,
 		}, // abc
 		{
 			[]byte{'a', 'b', 'c', '\r'},
-			nil,
+			"",
 			ErrUnexpectedEOF,
 		}, // abc (bad termination)
 	}
