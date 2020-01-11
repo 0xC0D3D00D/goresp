@@ -80,12 +80,14 @@ func Marshal(v interface{}) ([]byte, error) {
 		return encodeInteger(int64(v.(int32))), nil
 	case int64:
 		return encodeInteger(v.(int64)), nil
+	case uint8:
+		return encodeUnsignedInteger(uint64(v.(uint8))), nil
+	case uint16:
+		return encodeUnsignedInteger(uint64(v.(uint16))), nil
+	case uint32:
+		return encodeUnsignedInteger(uint64(v.(uint32))), nil
 	case uint64:
 		return encodeUnsignedInteger(v.(uint64)), nil
-	case uint8:
-		return encodeInteger(int64(v.(uint8))), nil
-	case uint32:
-		return encodeInteger(int64(v.(uint32))), nil
 	case string:
 		return encodeSimpleString(v.(string)), nil
 	case []byte:
