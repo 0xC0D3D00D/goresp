@@ -39,9 +39,27 @@ func BenchmarkEncodeBulkString(b *testing.B) {
 	}
 }
 
+func TestEncodeNil(t *testing.T) {
+	expected := []byte{'$', '-', '1', '\r', '\n'}
+	actual := encodeNil()
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Fatalf("expected %v got %v", expected, actual)
+	}
+}
+
+func TestEncodeUnsignedInteger(t *testing.T) {
+	expected := []byte{':', '4', '2', '9', '4', '9', '6', '7', '2', '9', '7', '\r', '\n'}
+	actual := encodeUnsignedInteger(4294967297) // 2^32+1
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Fatalf("expected %v got %v", expected, actual)
+	}
+}
+
 func TestEncodeInteger(t *testing.T) {
-	expected := []byte{':', '8', '\r', '\n'}
-	actual := encodeInteger(8)
+	expected := []byte{':', '-', '8', '\r', '\n'}
+	actual := encodeInteger(-8)
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Fatalf("expected %v got %v", expected, actual)

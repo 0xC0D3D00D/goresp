@@ -10,6 +10,10 @@ var (
 	crlf               = []byte{'\r', '\n'}
 )
 
+func encodeNil() []byte {
+	return []byte{'$', '-', '1', '\r', '\n'}
+}
+
 func encodeError(e error) []byte {
 	err := e.Error()
 	encoded := append([]byte{'-'}, err...)
@@ -19,6 +23,14 @@ func encodeError(e error) []byte {
 
 func encodeInteger(i int64) []byte {
 	size := strconv.FormatInt(i, 10)
+	encoded := append([]byte{':'}, size...)
+	encoded = append(encoded, crlf...)
+	return encoded
+}
+
+func encodeUnsignedInteger(i uint64) []byte {
+	size := strconv.FormatUint(i, 10)
+
 	encoded := append([]byte{':'}, size...)
 	encoded = append(encoded, crlf...)
 	return encoded
@@ -56,6 +68,8 @@ func encodeArray(a []interface{}) ([]byte, error) {
 
 func Marshal(v interface{}) ([]byte, error) {
 	switch v.(type) {
+	case nil:
+		return encodeNil(), nil
 	case int:
 		return encodeInteger(int64(v.(int))), nil
 	case int8:
@@ -66,8 +80,8 @@ func Marshal(v interface{}) ([]byte, error) {
 		return encodeInteger(int64(v.(int32))), nil
 	case int64:
 		return encodeInteger(v.(int64)), nil
-	case uint:
-		return encodeInteger(int64(v.(uint))), nil
+	case uint64:
+		return encodeUnsignedInteger(v.(uint64)), nil
 	case uint8:
 		return encodeInteger(int64(v.(uint8))), nil
 	case uint32:
